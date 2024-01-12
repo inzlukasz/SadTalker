@@ -7,7 +7,7 @@ echo venv folder already exists, skipping creation...
 )
 call .\venv\Scripts\activate.bat
 
-set PYTHON="venv\Scripts\Python.exe"
+set PYTHON="Python.exe"
 echo venv %PYTHON%
 
 %PYTHON% Launcher.py
