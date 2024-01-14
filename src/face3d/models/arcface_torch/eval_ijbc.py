@@ -53,10 +53,17 @@ batch_size = args.batch_size
 
 class Embedding(object):
     def __init__(self, prefix, data_shape, batch_size=1):
+        if torch.is_vulkan_available():
+            device = "vulkan"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
+        self.device = device
         image_size = (112, 112)
         self.image_size = image_size
         weight = torch.load(prefix)
-        resnet = get_model(args.network, dropout=0, fp16=False).cuda()
+        resnet = get_model(args.network, dropout=0, fp16=False).to(self.device)
         resnet.load_state_dict(weight)
         model = torch.nn.DataParallel(resnet)
         self.model = model
@@ -102,7 +109,7 @@ class Embedding(object):
 
     @torch.no_grad()
     def forward_db(self, batch_data):
-        imgs = torch.Tensor(batch_data).cuda()
+        imgs = torch.Tensor(batch_data).to(self.device)
         imgs.div_(255).sub_(0.5).div_(0.5)
         feat = self.model(imgs)
         feat = feat.reshape([self.batch_size, 2 * feat.shape[1]])

@@ -20,7 +20,9 @@ class SadTalker():
 
     def __init__(self, checkpoint_path='checkpoints', config_path='src/config', lazy_load=False):
 
-        if torch.cuda.is_available() :
+        if torch.is_vulkan_available():
+            device = "vulkan"
+        elif torch.cuda.is_available():
             device = "cuda"
         else:
             device = "cpu"

@@ -45,6 +45,14 @@ class AnimateFromCoeff():
                                **config['model_params']['common_params'])
         mapping = MappingNet(**config['model_params']['mapping_params'])
 
+        if torch.is_vulkan_available():
+            device = "vulkan"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
+        self.device = device
+
         generator.to(device)
         kp_extractor.to(device)
         he_estimator.to(device)
@@ -80,8 +88,6 @@ class AnimateFromCoeff():
         self.generator.eval()
         self.he_estimator.eval()
         self.mapping.eval()
-         
-        self.device = device
     
     def load_cpk_facevid2vid_safetensor(self, checkpoint_path, generator=None, 
                         kp_detector=None, he_estimator=None,  

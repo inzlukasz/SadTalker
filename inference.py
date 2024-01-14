@@ -136,10 +136,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if torch.cuda.is_available() and not args.cpu:
-        args.device = "cuda"
+    if torch.is_vulkan_available() and not args.cpu:
+        device = "vulkan"
+    elif torch.cuda.is_available():
+        device = "cuda"
     else:
-        args.device = "cpu"
+        device = "cpu"
 
     main(args)
 

@@ -5,8 +5,15 @@ from src.audio2pose_models.discriminator import PoseSequenceDiscriminator
 from src.audio2pose_models.audio_encoder import AudioEncoder
 
 class Audio2Pose(nn.Module):
-    def __init__(self, cfg, wav2lip_checkpoint, device='cuda'):
+    def __init__(self, cfg, wav2lip_checkpoint, device='cpu'):
         super().__init__()
+        if torch.is_vulkan_available():
+            device = "vulkan"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
+        self.device = device
         self.cfg = cfg
         self.seq_len = cfg.MODEL.CVAE.SEQ_LEN
         self.latent_dim = cfg.MODEL.CVAE.LATENT_SIZE
@@ -24,11 +31,11 @@ class Audio2Pose(nn.Module):
     def forward(self, x):
 
         batch = {}
-        coeff_gt = x['gt'].cuda().squeeze(0)           #bs frame_len+1 73
+        coeff_gt = x['gt'].to(self.device).squeeze(0)           #bs frame_len+1 73
         batch['pose_motion_gt'] = coeff_gt[:, 1:, 64:70] - coeff_gt[:, :1, 64:70] #bs frame_len 6
         batch['ref'] = coeff_gt[:, 0, 64:70]  #bs  6
-        batch['class'] = x['class'].squeeze(0).cuda() # bs
-        indiv_mels= x['indiv_mels'].cuda().squeeze(0) # bs seq_len+1 80 16
+        batch['class'] = x['class'].squeeze(0).to(self.device)() # bs
+        indiv_mels= x['indiv_mels'].to(self.device).squeeze(0) # bs seq_len+1 80 16
 
         # forward
         audio_emb_list = []

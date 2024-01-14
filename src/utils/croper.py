@@ -17,7 +17,13 @@ import numpy as np
 from PIL import Image
 
 class Preprocesser:
-    def __init__(self, device='cuda'):
+    def __init__(self, device='cpu'):
+        if torch.is_vulkan_available():
+            device = "vulkan"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
         self.predictor = KeypointExtractor(device)
 
     def get_landmark(self, img_np):

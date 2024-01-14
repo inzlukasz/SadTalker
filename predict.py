@@ -16,7 +16,12 @@ checkpoints = "checkpoints"
 class Predictor(BasePredictor):
     def setup(self):
         """Load the model into memory to make running multiple predictions efficient"""
-        device = "cuda"
+        if torch.is_vulkan_available():
+            device = "vulkan"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
 
         
         sadtalker_paths = init_path(checkpoints,os.path.join("src","config"))
@@ -83,7 +88,12 @@ class Predictor(BasePredictor):
         args = load_default()
         args.pic_path = str(source_image)
         args.audio_path = str(driven_audio)
-        device = "cuda"
+        if torch.is_vulkan_available():
+            device = "vulkan"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
         args.still = still
         args.ref_eyeblink = None if ref_eyeblink is None else str(ref_eyeblink)
         args.ref_pose = None if ref_pose is None else str(ref_pose)
